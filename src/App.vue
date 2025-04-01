@@ -90,7 +90,7 @@ export default {
     addUserMarkers(userLocations) {
       this.clearMarkers();
 
-      Object.entries(userLocations).forEach(([coords]) => {
+      Object.entries(userLocations).forEach(([, coords]) => {
         const latitude = parseFloat(coords.latitude);
         const longitude = parseFloat(coords.longitude);
         if (!isNaN(latitude) && !isNaN(longitude)) {
