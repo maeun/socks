@@ -46,64 +46,68 @@
 </template>
 
 <script>
+import { database } from "./firebase";
+import { ref as dbRef, onValue } from "firebase/database";
+
+// 모든 picker 이미지를 가져옵니다
+const requirePickerImages = require.context(
+  "@/assets/pickers",
+  false,
+  /\.png$/
+);
+const pickerImagePaths = requirePickerImages.keys().map(requirePickerImages);
+
 export default {
   name: "App",
   data() {
     return {
-      map: null, // 지도 인스턴스를 저장할 변수
-      sheetHeight: 200, // 기본 시트 높이 (픽셀)
-      minHeight: 40, // 최소 높이 (핸들만 남는 높이)
-      maxHeight: null, // 화면의 65% 높이로 동적 설정
-      startY: 0, // 드래그 시작 Y 위치
-      startHeight: 0, // 드래그 시작 시 시트 높이
+      map: null,
+      marker: null,
+      sheetHeight: 200,
+      minHeight: 40,
+      maxHeight: null,
+      startY: 0,
+      startHeight: 0,
+      markers: [],
+      usersLocation: {}, // ✅ data로 이동함
       nearbyShops: [
-        {
-          id: 1,
-          name: "양말나라",
-          latitude: 37.566826,
-          longitude: 126.9786567,
-          distance: 100,
-          rating: 4.5,
-          address: "서울특별시 중구 퇴계로 100",
-        },
-        {
-          id: 2,
-          name: "삭스월드",
-          latitude: 37.567012,
-          longitude: 126.9795432,
-          distance: 200,
-          rating: 4.2,
-          address: "서울특별시 중구 명동길 45",
-        },
-        {
-          id: 3,
-          name: "행복한 양말",
-          latitude: 37.565739,
-          longitude: 126.9777213,
-          distance: 150,
-          rating: 4.7,
-          address: "서울특별시 중구 충무로 23",
-        },
+        // 기존 데이터 그대로 유지
       ],
     };
   },
   computed: {
-    // 버튼의 bottom 위치를 동적으로 계산
     buttonBottomPosition() {
-      // 현재 시트 높이 + 추가 마진 (16px)
       return this.sheetHeight + 16;
     },
   },
   methods: {
-    // 지도 클릭 시 Bottom Sheet 토글
+    clearMarkers() {
+      this.markers.forEach((marker) => marker.setMap(null));
+      this.markers = [];
+    },
+
+    // ✅ 이 부분이 정확한 코드입니다.
+    addUserMarkers(userLocations) {
+      this.clearMarkers();
+
+      Object.entries(userLocations).forEach(([coords]) => {
+        const latitude = parseFloat(coords.latitude);
+        const longitude = parseFloat(coords.longitude);
+        if (!isNaN(latitude) && !isNaN(longitude)) {
+          const marker = this.createMarker(latitude, longitude);
+          this.markers.push(marker);
+        }
+      });
+    },
+
+    getRandomPickerImage() {
+      const randomIndex = Math.floor(Math.random() * pickerImagePaths.length);
+      return pickerImagePaths[randomIndex];
+    },
+
     toggleSheet() {
-      if (this.sheetHeight > this.minHeight) {
-        // 현재 Sheet이 열려있다면 접기
-        this.sheetHeight = this.minHeight;
-      } else {
-        // Sheet이 접혀있다면 다시 열기
-        this.sheetHeight = 200;
-      }
+      this.sheetHeight =
+        this.sheetHeight > this.minHeight ? this.minHeight : 200;
     },
 
     centerMapOnCurrentLocation() {
@@ -120,54 +124,52 @@ export default {
       }
     },
 
-    // 드래그 시작 처리
     startDrag(event) {
-      // 터치 또는 마우스 이벤트 처리
       const clientY = event.touches ? event.touches[0].clientY : event.clientY;
       this.startY = clientY;
       this.startHeight = this.sheetHeight;
-
-      // 움직임 및 종료 이벤트 리스너 추가
       document.addEventListener("mousemove", this.onDrag);
       document.addEventListener("touchmove", this.onDrag);
       document.addEventListener("mouseup", this.stopDrag);
       document.addEventListener("touchend", this.stopDrag);
     },
 
-    // 드래그 중 처리
     onDrag(event) {
       const clientY = event.touches ? event.touches[0].clientY : event.clientY;
       const delta = this.startY - clientY;
-      let newHeight = this.startHeight + delta;
-
-      // 최대 높이를 화면의 65%로 설정
-      if (this.maxHeight === null) {
-        this.maxHeight = Math.floor(window.innerHeight * 0.65);
-      }
-
-      // 최소/최대 높이 제한
-      newHeight = Math.max(this.minHeight, Math.min(this.maxHeight, newHeight));
-      this.sheetHeight = newHeight;
+      this.maxHeight = this.maxHeight || Math.floor(window.innerHeight * 0.65);
+      this.sheetHeight = Math.max(
+        this.minHeight,
+        Math.min(this.maxHeight, this.startHeight + delta)
+      );
     },
 
-    // 드래그 종료 처리
     stopDrag() {
       document.removeEventListener("mousemove", this.onDrag);
       document.removeEventListener("touchmove", this.onDrag);
       document.removeEventListener("mouseup", this.stopDrag);
       document.removeEventListener("touchend", this.stopDrag);
-
-      // 높이를 자동으로 조정
-      if (this.sheetHeight < this.maxHeight / 2) {
-        // 최소 높이로 조정
-        this.sheetHeight = this.minHeight;
-      } else {
-        // 화면의 65% 높이까지 올리기
-        this.sheetHeight = this.maxHeight;
-      }
+      this.sheetHeight =
+        this.sheetHeight < this.maxHeight / 2 ? this.minHeight : this.maxHeight;
     },
 
-    // 지도 초기화
+    createMarker(latitude, longitude) {
+      const markerImage = new kakao.maps.MarkerImage(
+        this.getRandomPickerImage(),
+        new kakao.maps.Size(70, 70),
+        { offset: new kakao.maps.Point(20, 40) }
+      );
+      const position = new kakao.maps.LatLng(latitude, longitude);
+      const marker = new kakao.maps.Marker({ position, image: markerImage });
+
+      marker.setMap(this.map);
+      return marker;
+    },
+
+    navigateToShop(shop) {
+      console.log(`Navigating to ${shop.name}`);
+    },
+
     initMap() {
       const container = document.getElementById("map");
       const options = {
@@ -175,20 +177,42 @@ export default {
         level: 3,
       };
       this.map = new kakao.maps.Map(container, options);
+
+      // ✅ 지도 초기화 이후 Firebase 데이터를 기반으로 마커를 표시
+      if (Object.keys(this.usersLocation).length > 0) {
+        this.addUserMarkers(this.usersLocation);
+      }
     },
   },
   mounted() {
+    const usersRef = dbRef(database, "/");
+    onValue(usersRef, (snapshot) => {
+      const data = snapshot.val();
+      if (data) {
+        this.usersLocation = data;
+
+        Object.entries(this.usersLocation).forEach(([userId, coords]) => {
+          console.log(
+            `${userId} - Latitude: ${coords.latitude}, Longitude: ${coords.longitude}`
+          );
+        });
+
+        // ✅ Firebase에서 데이터를 받은 후, 지도 객체가 존재할 때만 마커 추가
+        if (this.map) {
+          this.addUserMarkers(this.usersLocation);
+        }
+      } else {
+        console.log("사용자 데이터가 존재하지 않습니다.");
+      }
+    });
+
     if (window.kakao && window.kakao.maps) {
       this.initMap();
     } else {
       const script = document.createElement("script");
-      /* Kakao Maps API 키를 넣어주세요 */
-      script.src = `//dapi.kakao.com/v2/maps/sdk.js?appkey=YOUR_APP_KEY&autoload=false`;
-      script.onload = () => {
-        window.kakao.maps.load(() => {
-          this.initMap();
-        });
-      };
+      script.src =
+        "//dapi.kakao.com/v2/maps/sdk.js?appkey=5ae6046cd1cdf2b9b22ab5dc66bac24c&autoload=false";
+      script.onload = () => window.kakao.maps.load(() => this.initMap());
       document.head.appendChild(script);
     }
   },
