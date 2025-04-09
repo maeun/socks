@@ -6,21 +6,21 @@ const requirePickerImages = require.context(
   );
   const pickerImagePaths = requirePickerImages.keys().map(requirePickerImages);
   
-  /**
-   * Kakao 지도 스크립트 로드 함수
-   * @param {Function} callback - 스크립트 로드 후 실행할 콜백 함수
-   */
-  export function initKakaoMapScript(callback) {
-    if (window.kakao && window.kakao.maps) {
-      callback();
-    } else {
-      const script = document.createElement("script");
-      script.src =
-        "//dapi.kakao.com/v2/maps/sdk.js?appkey=5ae6046cd1cdf2b9b22ab5dc66bac24c&autoload=false";
-      script.onload = () => window.kakao.maps.load(callback);
-      document.head.appendChild(script);
-    }
+/**
+ * Kakao 지도 스크립트 로드 함수
+ * @param {Function} callback - 스크립트 로드 후 실행할 콜백 함수
+ */
+export function initKakaoMapScript(callback) {
+  if (window.kakao && window.kakao.maps) {
+    callback();
+  } else {
+    const script = document.createElement("script");
+    script.src =
+      "//dapi.kakao.com/v2/maps/sdk.js?appkey=5ae6046cd1cdf2b9b22ab5dc66bac24c&autoload=false";
+    script.onload = () => window.kakao.maps.load(callback); // 여기를 수정
+    document.head.appendChild(script);
   }
+}
   
   /**
    * 랜덤 picker 이미지 가져오기
