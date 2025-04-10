@@ -1,5 +1,9 @@
 <template>
-  <v-dialog v-model="localVisible" max-width="500px" content-class="register-form-dialog">
+  <v-dialog
+    v-model="localVisible"
+    max-width="500px"
+    content-class="register-form-dialog"
+  >
     <v-card class="register-form-card">
       <v-card-title class="register-title">
         <div class="d-flex align-center">
@@ -10,9 +14,9 @@
           <v-icon>mdi-close</v-icon>
         </v-btn>
       </v-card-title>
-      
+
       <v-divider></v-divider>
-      
+
       <v-card-text class="pt-4">
         <v-form ref="form" v-model="isFormValid">
           <div class="form-section">
@@ -20,24 +24,26 @@
               <v-icon color="primary" small class="mr-2">mdi-account</v-icon>
               <span>사장님 정보</span>
             </div>
-            
+
             <v-text-field
               v-model="shopData.ownerName"
               label="사장님 이름"
-              :rules="[v => !!v || '사장님 이름을 입력해주세요']"
+              :rules="[(v) => !!v || '사장님 이름을 입력해주세요']"
               outlined
               dense
               prepend-inner-icon="mdi-account-outline"
               required
               class="mb-2"
             ></v-text-field>
-            
+
             <v-text-field
               v-model="shopData.phoneNumber"
               label="핸드폰 번호"
               :rules="[
-                v => !!v || '핸드폰 번호를 입력해주세요',
-                v => /^01[0-9]-?[0-9]{3,4}-?[0-9]{4}$/.test(v) || '올바른 핸드폰 번호 형식이 아닙니다'
+                (v) => !!v || '핸드폰 번호를 입력해주세요',
+                (v) =>
+                  /^01[0-9]-?[0-9]{3,4}-?[0-9]{4}$/.test(v) ||
+                  '올바른 핸드폰 번호 형식이 아닙니다',
               ]"
               outlined
               dense
@@ -47,24 +53,26 @@
               required
             ></v-text-field>
           </div>
-          
+
           <div class="form-section">
             <div class="section-title">
-              <v-icon color="primary" small class="mr-2">mdi-store-outline</v-icon>
+              <v-icon color="primary" small class="mr-2"
+                >mdi-store-outline</v-icon
+              >
               <span>가게 정보</span>
             </div>
-            
+
             <v-text-field
               v-model="shopData.shopName"
               label="가게 이름"
-              :rules="[v => !!v || '가게 이름을 입력해주세요']"
+              :rules="[(v) => !!v || '가게 이름을 입력해주세요']"
               outlined
               dense
               prepend-inner-icon="mdi-store-outline"
               required
               class="mb-3"
             ></v-text-field>
-            
+
             <div class="location-card">
               <div class="location-header">
                 <div class="d-flex align-center">
@@ -77,30 +85,39 @@
                   text-color="white"
                   class="ml-2"
                 >
-                  {{ isLocationSelected ? '위치 설정됨' : '위치 미설정' }}
+                  {{ isLocationSelected ? "위치 설정됨" : "위치 미설정" }}
                 </v-chip>
               </div>
-              
+
               <v-divider class="my-2"></v-divider>
-              
+
               <div class="location-content">
                 <div v-if="isLocationSelected" class="location-info">
                   <div class="d-flex align-center">
                     <v-icon color="green" small>mdi-check-circle</v-icon>
-                    <span class="ml-2 text-body-2">위치가 성공적으로 설정되었습니다</span>
+                    <span class="ml-2 text-body-2"
+                      >위치가 성공적으로 설정되었습니다</span
+                    >
                   </div>
                   <div class="location-address text-body-2 mt-1">
-                    <v-icon color="blue-grey" x-small class="mr-1">mdi-map</v-icon>
-                    {{ shopData.location.address || '주소 불러오는 중...' }}
+                    <v-icon color="blue-grey" x-small class="mr-1"
+                      >mdi-map</v-icon
+                    >
+                    {{ shopData.location.address || "주소 불러오는 중..." }}
                   </div>
                   <div class="location-coordinates text-caption text-grey">
-                    {{ formatCoordinates(shopData.location.latitude, shopData.location.longitude) }}
+                    {{
+                      formatCoordinates(
+                        shopData.location.latitude,
+                        shopData.location.longitude
+                      )
+                    }}
                   </div>
                 </div>
                 <div v-else class="text-body-2 text-grey">
                   아래 버튼을 클릭하여 현재 위치를 가게 위치로 설정해주세요
                 </div>
-                
+
                 <v-btn
                   block
                   :color="isLocationSelected ? 'success' : 'primary'"
@@ -109,25 +126,27 @@
                   class="mt-3"
                   @click="selectCurrentLocation"
                 >
-                  <v-icon left>{{ isLocationSelected ? 'mdi-map-marker-check' : 'mdi-crosshairs-gps' }}</v-icon>
-                  {{ isLocationSelected ? '위치 재설정하기' : '현재 위치로 설정하기' }}
+                  <v-icon left>{{
+                    isLocationSelected
+                      ? "mdi-map-marker-check"
+                      : "mdi-crosshairs-gps"
+                  }}</v-icon>
+                  {{
+                    isLocationSelected
+                      ? "위치 재설정하기"
+                      : "현재 위치로 설정하기"
+                  }}
                 </v-btn>
               </div>
             </div>
           </div>
         </v-form>
       </v-card-text>
-      
+
       <v-divider></v-divider>
-      
+
       <v-card-actions class="register-actions">
-        <v-btn
-          text
-          color="grey darken-1"
-          @click="closeForm"
-        >
-          취소
-        </v-btn>
+        <v-btn text color="grey darken-1" @click="closeForm"> 취소 </v-btn>
         <v-spacer></v-spacer>
         <v-btn
           color="primary"
@@ -144,33 +163,33 @@
 </template>
 
 <script>
-import { initKakaoMapScript } from '@/utils/mapUtils';
+import { initKakaoMapScript } from "@/utils/mapUtils";
 
 export default {
   name: "RegisterShopForm",
   props: {
     visible: {
       type: Boolean,
-      default: false
-    }
+      default: false,
+    },
   },
-  emits: ['update:visible', 'register-shop'],
+  emits: ["update:visible", "register-shop"],
   data() {
     return {
       localVisible: false,
       isFormValid: false,
       isLocationSelected: false,
       shopData: {
-        ownerName: '',
-        phoneNumber: '',
-        shopName: '',
+        ownerName: "",
+        phoneNumber: "",
+        shopName: "",
         location: {
           latitude: null,
           longitude: null,
-          address: null
-        }
+          address: null,
+        },
       },
-      isAddressLoading: false
+      isAddressLoading: false,
     };
   },
   watch: {
@@ -178,11 +197,11 @@ export default {
       this.localVisible = newVal;
     },
     localVisible(newVal) {
-      this.$emit('update:visible', newVal);
+      this.$emit("update:visible", newVal);
       if (!newVal) {
         this.resetForm();
       }
-    }
+    },
   },
   methods: {
     closeForm() {
@@ -190,14 +209,14 @@ export default {
     },
     resetForm() {
       this.shopData = {
-        ownerName: '',
-        phoneNumber: '',
-        shopName: '',
+        ownerName: "",
+        phoneNumber: "",
+        shopName: "",
         location: {
           latitude: null,
           longitude: null,
-          address: null
-        }
+          address: null,
+        },
       };
       this.isLocationSelected = false;
       if (this.$refs.form) {
@@ -211,13 +230,18 @@ export default {
             this.shopData.location.latitude = position.coords.latitude;
             this.shopData.location.longitude = position.coords.longitude;
             this.isLocationSelected = true;
-            
+
             // 위치 정보를 가져온 후 도로명 주소 조회
-            this.getAddressFromCoords(position.coords.latitude, position.coords.longitude);
+            this.getAddressFromCoords(
+              position.coords.latitude,
+              position.coords.longitude
+            );
           },
           (error) => {
             console.error("Error getting location:", error);
-            alert("위치 정보를 가져오는데 실패했습니다. 위치 사용 권한을 확인해주세요.");
+            alert(
+              "위치 정보를 가져오는데 실패했습니다. 위치 사용 권한을 확인해주세요."
+            );
           }
         );
       } else {
@@ -227,63 +251,55 @@ export default {
     // 좌표로 주소 검색 (카카오맵 API)
     getAddressFromCoords(lat, lng) {
       this.isAddressLoading = true;
-      this.shopData.location.address = '주소 불러오는 중...';
-      
-      // 카카오맵 API 초기화 (services 라이브러리 추가)
-      initKakaoMapScript(() => {
-        // 서비스 라이브러리 동적 로드
-        this.loadKakaoServices(() => {
-          // 서비스 라이브러리 로드 완료 후 주소 변환 실행
-          const geocoder = new window.kakao.maps.services.Geocoder();
-          
-          geocoder.coord2Address(lng, lat, (result, status) => {
-            this.isAddressLoading = false;
-            
-            if (status === window.kakao.maps.services.Status.OK) {
-              if (result[0].road_address) {
-                // 도로명 주소가 있는 경우
-                this.shopData.location.address = result[0].road_address.address_name;
+      this.shopData.location.address = "주소 불러오는 중...";
+
+      // 카카오맵 API 초기화 및 서비스 라이브러리 로드
+      initKakaoMapScript((status) => {
+        if (status === "success") {
+          if (window.kakao && window.kakao.maps && window.kakao.maps.services) {
+            const geocoder = new window.kakao.maps.services.Geocoder();
+
+            geocoder.coord2Address(lng, lat, (result, status) => {
+              this.isAddressLoading = false;
+
+              if (status === window.kakao.maps.services.Status.OK) {
+                if (result[0].road_address) {
+                  // 도로명 주소가 있는 경우
+                  this.shopData.location.address =
+                    result[0].road_address.address_name;
+                } else {
+                  // 도로명 주소가 없는 경우 지번 주소 사용
+                  this.shopData.location.address =
+                    result[0].address.address_name;
+                }
               } else {
-                // 도로명 주소가 없는 경우 지번 주소 사용
-                this.shopData.location.address = result[0].address.address_name;
+                this.shopData.location.address = "주소를 찾을 수 없습니다";
+                console.error("주소 변환 실패:", status);
               }
-            } else {
-              this.shopData.location.address = "주소를 찾을 수 없습니다";
-              console.error("주소 변환 실패:", status);
-            }
-          });
-        });
+            });
+          } else {
+            console.error("카카오맵 services 라이브러리를 찾을 수 없습니다.");
+            this.shopData.location.address = "주소 서비스 초기화 실패";
+            this.isAddressLoading = false;
+          }
+        } else {
+          console.error("카카오맵 API 초기화 실패");
+          this.shopData.location.address = "지도 서비스 초기화 실패";
+          this.isAddressLoading = false;
+        }
       });
-    },
-    // 카카오맵 서비스 라이브러리 로드
-    loadKakaoServices(callback) {
-      if (window.kakao.maps.services) {
-        callback();
-        return;
-      }
-      
-      // 서비스 라이브러리가 없는 경우 동적으로 라이브러리 로드
-      const script = document.createElement("script");
-      script.src = "//dapi.kakao.com/v2/maps/sdk.js?appkey=5ae6046cd1cdf2b9b22ab5dc66bac24c&libraries=services";
-      script.onload = () => {
-        // 라이브러리 로드 후 kakao.maps 객체 다시 초기화
-        window.kakao.maps.load(() => {
-          callback();
-        });
-      };
-      document.head.appendChild(script);
     },
     submitForm() {
       if (this.isFormValid && this.isLocationSelected) {
-        this.$emit('register-shop', { ...this.shopData });
+        this.$emit("register-shop", { ...this.shopData });
         this.closeForm();
       }
     },
     formatCoordinates(lat, lng) {
-      if (lat === null || lng === null) return '';
+      if (lat === null || lng === null) return "";
       return `위도: ${lat.toFixed(6)}, 경도: ${lng.toFixed(6)}`;
-    }
-  }
+    },
+  },
 };
 </script>
 
