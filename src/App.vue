@@ -16,7 +16,7 @@
 
     <RegisterShopForm
       v-model:visible="showRegisterForm"
-      @register-shop="handleRegisterShop"
+      @register-shop="registerShop"
     />
 
     <BottomSheet
